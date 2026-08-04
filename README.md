@@ -57,7 +57,7 @@ outsider can recompute.
 > OKX.AI as Agent **#10514**; listing `Under review`. **No real settlement has happened yet —
 > the settlement cells below stay blank until a paid call settles.**
 >
-> **Fixture gate:** the four Sybil rules from the plan (§4) were built as hard-failing tests
+> **Fixture gate:** the four Sybil rules from the plan were built as hard-failing tests
 > before any tool existed — self-attestation rejected against the signature, one attestation
 > per proof, unproven submissions stored `unverified`, and a standing floor so a new address
 > vouching for a new address is worth approximately nothing. This is a reputation service:
@@ -231,7 +231,7 @@ flowchart TB
 
 ## Verification Log
 
-### Fixture gate — §4 Sybil rules as hard failures
+### Fixture gate — Sybil rules as hard failures
 
 Built before any tool. The four rules are tests, not preferences:
 
@@ -247,7 +247,7 @@ S4  new address vouching for new address ≈ zero weight
 
 ```
 npm test (vitest)               → 28 passed / 28 (2 files), tsc clean
-  test/sybil.test.ts  (10)  → the §4 hard failures + weight scaling + score
+  test/sybil.test.ts  (10)  → the Sybil hard failures + weight scaling + score
                               determinism (same inputs, same score; no wall-
                               clock drift; honeypots count double)
   test/server.test.ts  (18)  → all 11 tools through the gate (bypass), free
