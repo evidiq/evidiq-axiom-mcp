@@ -120,9 +120,21 @@ agent can pay, what it holds and how it behaves. Neither proxies the other.
 
 ### x402 Payment Settlement (X Layer, chain 196)
 
+All five paid tools settled through the official OKX facilitator — unpaid call →
+HTTP 402 + `PAYMENT-REQUIRED` → EIP-3009 signature → `PAYMENT-SIGNATURE` retry →
+HTTP 200 + `PAYMENT-RESPONSE` (`status: settled`). Every call below returned a real
+payload, not a paid challenge.
+
 | Tool | Amount | Settlement tx | Result |
 |------|--------|---------------|--------|
-| — | — | — | Planned — cell stays blank until a real paid call settles. |
+| `attest_interaction` | `0.005 USDT0` (`5000` atomic) | [`0x8dc12b2f…b05a40`](https://www.oklink.com/xlayer/tx/0x8dc12b2f729a6f702e940840fbcf763520aea59a4b56e5ea2363388516b05a40) · success | `verified` challenge-response recorded at `seq 7`, receipt anchored (0G root `0x2a6eb062…`, tx `0x36508a03…`) |
+| `recommend_agent` | `0.01 USDT0` (`10000` atomic) | [`0xde767a2f…e37dc`](https://www.oklink.com/xlayer/tx/0xde767a2f01498b6626bbeab781dd3141b760a78ff109cd5acf34bdd30c1e37dc) · success | 1 candidate ranked by attested standing (`0xf39F…`), evidence count 1 |
+| `verify_claim` | `0.015 USDT0` (`15000` atomic) | [`0x671c7a66…6b96da`](https://www.oklink.com/xlayer/tx/0x671c7a66436233b0fceb15d620cc509a8cf8da582c3543ff43ea0f03e60b96da) · success | verdict `verified` with 5 on-chain citations, drafted mechanically, no score mutation |
+| `credit_report` | `0.02 USDT0` (`20000` atomic) | [`0x5d513591…508237`](https://www.oklink.com/xlayer/tx/0x5d513591c10b9bf2defe7b0d9840f2afabe0e3f804162eff9e96dccc0e508237) · success | solvency 1.51 USDT (below hackathon minimum), 0 honeypot, 0 approval exposure, 0 disputes |
+| `dispute_attestation` | `0.03 USDT0` (`30000` atomic) | [`0xed6c6729…444e7`](https://www.oklink.com/xlayer/tx/0xed6c6729bfa9f8e97eeb27298e46d29df916346c7b569dc82651a6af009444e7) · success | dispute `d-c8f2dc21` open, attestation seq 6 frozen, challenge signed and anchored |
+
+Total settled: **0.08 USDT0** across the five paid tools, paid from Account 1 (the
+fleet x402 wallet — the trading-hackathon capital on Account 2 was never touched).
 
 ---
 
