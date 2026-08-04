@@ -28,7 +28,7 @@ const db = openStore(process.env.AXIOM_DB_PATH || "/data/axiom.db");
 
 const handler = createAxiomServer({
   db,
-  onchain: new OnchainosSource(),
+  onchain: new OnchainosSource(process.env.ONCHAINOS_BIN || "/host-bin/onchainos"),
   proofVerifier: new OnchainosProofVerifier(),
   signerAvailable: getSignerAddress() !== null,
   clientIp: () => "local",

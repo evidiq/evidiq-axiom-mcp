@@ -3,6 +3,7 @@
 // balance sheet). All commands are read-only: portfolio, security, tracker,
 // market. Never a wallet operation, never an order.
 
+import { createHash } from "node:crypto";
 import { execFile } from "node:child_process";
 import type { ObservationKind, OnchainObservation } from "./score.js";
 
@@ -19,7 +20,7 @@ export class OnchainosSource implements OnchainSource {
 
   private async run(args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      execFile(this.bin, args, { timeout: 30_000 }, (err, stdout) => {
+      execFile(this.bin, args, { timeout: 60_000 }, (err, stdout) => {
         if (err) {
           reject(new Error(`onchainos ${args[0]} failed: ${err.message}`));
           return;
@@ -40,17 +41,22 @@ export class OnchainosSource implements OnchainSource {
   async observe(address: string, kind: ObservationKind): Promise<OnchainObservation> {
     const observedAt = new Date().toISOString();
     const a = address.toLowerCase();
+    const chains = process.env.AXIOM_OBSERVED_CHAINS || "196";
 
     switch (kind) {
       case "total_value": {
-        const raw = await this.run(["portfolio", "total-value", "--address", a]);
+        // Measured on the host: --chains is required and data is an array of
+        // { totalValue } per chain — sum it.
+        const raw = await this.run(["portfolio", "total-value", "--address", a, "--chains", chains]);
         const d = this.parse(raw);
-        const data = (d.data ?? d) as Record<string, unknown>;
-        const totalValueUsdt = Number(data.totalValueUsdt ?? data.totalValue ?? data.value ?? 0);
-        return { address: a, kind, payload: { totalValueUsdt }, observedAt, ref: String(data.snapshotAt ?? data.block ?? "") || undefined };
+        const data = (d.data ?? d) as unknown;
+        const list = Array.isArray(data) ? (data as { totalValue?: string | number }[]) : [];
+        const totalValueUsdt = list.reduce((acc, x) => acc + Number(x.totalValue ?? 0), 0);
+        return { address: a, kind, payload: { totalValueUsdt }, observedAt, ref: undefined };
       }
       case "token_scan": {
-        const raw = await this.run(["security", "token-scan", "--address", a]);
+        // Measured on the host: --chains is required here too.
+        const raw = await this.run(["security", "token-scan", "--address", a, "--chain", "xlayer"]);
         const d = this.parse(raw);
         const data = (d.data ?? d) as Record<string, unknown>;
         return {
@@ -70,44 +76,46 @@ export class OnchainosSource implements OnchainSource {
         const raw = await this.run(["security", "approvals", "--address", a]);
         const d = this.parse(raw);
         const data = (d.data ?? d) as Record<string, unknown>;
-        const list = (data.approvals ?? data.list ?? []) as unknown[];
+        const list = (data.dataList ?? data.approvals ?? data.list ?? []) as unknown[];
         const unlimitedUnknown = list.filter((x) => {
           const o = x as Record<string, unknown>;
           return Number(o.amount ?? 0) >= 1e30 && !String(o.spender ?? "").toLowerCase().includes("router");
         }).length;
-        return { address: a, kind, payload: { checked: true, unlimitedApprovalsToUnknown: unlimitedUnknown }, observedAt, ref: String(data.snapshotAt ?? "") || undefined };
+        return { address: a, kind, payload: { checked: true, unlimitedApprovalsToUnknown: unlimitedUnknown }, observedAt, ref: String(data.cursor ?? "") || undefined };
       }
       case "activities": {
-        const raw = await this.run(["tracker", "activities", "--address", a, "--page", "1", "--page-size", "5"]);
+        // Measured on the host: tracker-type + wallet-address, data.trades.
+        const raw = await this.run(["tracker", "activities", "--tracker-type", "multi_address", "--wallet-address", a]);
         const d = this.parse(raw);
         const data = (d.data ?? d) as Record<string, unknown>;
-        const list = (data.list ?? data.activities ?? []) as unknown[];
-        const last = list[0] as Record<string, unknown> | undefined;
+        const trades = (data.trades ?? data.list ?? []) as Record<string, unknown>[];
+        const last = trades[0];
         return {
           address: a,
           kind,
           payload: {
-            activityCount: list.length,
-            lastActivityAt: String(last?.time ?? last?.timestamp ?? last?.createdAt ?? "") || null,
+            activityCount: trades.length,
+            lastActivityAt: String(last?.time ?? last?.timestamp ?? last?.tradeTime ?? "") || null,
           },
           observedAt,
-          ref: String(data.snapshotAt ?? "") || undefined,
+          ref: undefined,
         };
       }
       case "pnl": {
-        const raw = await this.run(["market", "wallet", "--address", a, "--pnl"]);
+        // Measured on the host: market portfolio-overview --address --chain.
+        const raw = await this.run(["market", "portfolio-overview", "--address", a, "--chain", "xlayer"]);
         const d = this.parse(raw);
         const data = (d.data ?? d) as Record<string, unknown>;
         return {
           address: a,
           kind,
           payload: {
-            isTradingAgent: true,
-            pnlUsdt: Number(data.pnlUsdt ?? data.pnl ?? 0),
-            baseUsdt: Number(data.baseUsdt ?? data.base ?? 0),
+            isTradingAgent: Number(data.buyTxCount ?? 0) > 0 || Number(data.sellTxCount ?? 0) > 0,
+            pnlUsdt: Number(data.realizedPnlUsd ?? data.pnlUsdt ?? 0),
+            baseUsdt: Number(data.baseUsdt ?? data.buyTxVolume ?? 0),
           },
           observedAt,
-          ref: String(data.snapshotAt ?? "") || undefined,
+          ref: undefined,
         };
       }
     }
@@ -133,15 +141,14 @@ export class OnchainosProofVerifier implements ProofVerifier {
   private bin: string;
   private rpc: string;
 
-  constructor(bin = process.env.ONCHAINOS_BIN || "/root/.local/bin/onchainos", rpc = process.env.X402_RPC || "https://rpc.xlayer.tech") {
+  constructor(bin = process.env.ONCHAINOS_BIN || "/host-bin/onchainos", rpc = process.env.X402_RPC || "https://rpc.xlayer.tech") {
     this.bin = bin;
     this.rpc = rpc;
   }
 
   private async run(args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      const { execFile } = require("node:child_process") as typeof import("node:child_process");
-      execFile(this.bin, args, { timeout: 30_000 }, (err, stdout) => {
+      execFile(this.bin, args, { timeout: 60_000 }, (err, stdout) => {
         if (err) reject(new Error(`onchainos ${args[0]} failed: ${err.message}`));
         else resolve(stdout);
       });
@@ -181,7 +188,7 @@ export class OnchainosProofVerifier implements ProofVerifier {
     // Pure crypto: the response signature must recover to the subject's address.
     // No fetch — the endpoint URL is evidence of intent, never something to call.
     try {
-      const digest = "0x" + require("node:crypto").createHash("sha256").update(challenge.payload, "utf8").digest("hex");
+      const digest = "0x" + createHash("sha256").update(challenge.payload, "utf8").digest("hex");
       const recovered = await recoverMessageAddress({
         message: { raw: digest as `0x${string}` },
         signature: challenge.signature as `0x${string}`,

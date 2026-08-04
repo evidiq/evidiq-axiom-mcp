@@ -243,8 +243,39 @@ npm test (vitest)               → 28 passed / 28 (2 files), tsc clean
 
 ### Live test (Phase 1, bypass on)
 
-To be appended after the live probe and the OpenClaw run — nothing here is claimed that has
-not been observed.
+All 11 tools were exercised live against `https://mcp.evidiq.dev/axiom/mcp` with the
+bypass on (Phase 1), through direct MCP calls and through the OpenClaw agent
+(zerog/glm-5.2) on the VPS; raw run in `docs/live-test/axiom-livetest-out.log` and a
+recorded GIF in `docs/live-test/axiom-livetest.gif`.
+
+```
+Free Tools (HTTP 200)
+  axiom_capabilities {}          → 200 ✓ (11 tools, scoreVersion 1.0.0)
+  wallet_profile (fleet wallet)  → 200 ✓ (totalValue 1.51 USDT live, tokenCount 0)
+  trust_score (fleet wallet)     → 200 ✓ (55/100 — solvency + approval-exposure
+                                    proven; behavioural family honestly unproven)
+  verify_attestation seq 2       → 200 ✓ (signatureValid true, anchored, chain
+                                    gaps detected — omission is visible)
+Paid Tools (200 here because the bypass was on)
+  attest_interaction             → 200 ✓ verified (challenge-response, 0G anchored);
+                                    a replayed proof was honestly rejected (S2)
+  recommend_agent                → 200 ✓ honest "insufficient evidence"
+  verify_claim                   → 200 ✓ verified with 5 citations, mechanical
+  credit_report                  → 200 ✓ (solvency 1.51 USDT "below hackathon
+                                    minimum", 0 honeypot, 0 disputes)
+  dispute_attestation            → 200 ✓ (dispute open, seq frozen, anchored)
+Public route                     → /axiom/health 200 · /axiom/skill.md 200 · /axiom/mcp 200 ✓
+```
+
+### Live test through the OpenClaw agent (glm-5.2 on the VPS)
+
+The Axiom skill was exercised end-to-end by the OpenClaw agent in one run against
+`https://mcp.evidiq.dev/axiom/mcp` — 11/11 → 200 ✓. Note on the host model: the
+configured default (`opencode/deepseek-v4-flash`) stalls with no tokens, so the
+default was switched to `zerog/glm-5.2` before the run — the same fix Helm recorded.
+Full run output in `docs/live-test/axiom-livetest-out.log`.
+
+![EVIDIQ Axiom MCP — live test report](./docs/live-test/report.png)
 
 ### Phase 2 — planned, cells stay blank until observed
 

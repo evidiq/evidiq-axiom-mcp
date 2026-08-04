@@ -227,10 +227,13 @@ Scoring: pure, versioned (scoreVersion ${SCORE_VERSION}), reproducible from stor
             attestations.some((a) => a.seq === d.attestationSeq)
           ).length;
 
+          const hasAny = obs.length > 0;
           const base = {
             ok: true,
             address,
-            finding: "no on-chain observations recorded yet — an agent with no history is a different risk, not an unknown",
+            finding: hasAny
+              ? "on-chain observations recorded — see the fields below; attestation count is separate from any marketplace number"
+              : "no on-chain observations recorded yet — an agent with no history is a different risk, not an unknown",
             boundary: COMPASS_BOUNDARY_NOTE,
             rateNote: degraded ? `soft rate limit reached (${FREE_SOFT_LIMIT}/day/IP) — detail degraded, still 200` : undefined,
           };

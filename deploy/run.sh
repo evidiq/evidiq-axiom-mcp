@@ -35,6 +35,8 @@ docker run -d \
   --env-file "${ENV_FILE}" \
   -p "127.0.0.1:${HOST_PORT}:3022" \
   -v "${DATA_DIR}:/data" \
+  -v "/root/.local/bin/onchainos:/host-bin/onchainos:ro" \
+  -v "/root/.onchainos:/root/.onchainos:ro" \
   --label "traefik.enable=true" \
   --label "traefik.http.routers.axiom.rule=Host(\`mcp.evidiq.dev\`) && PathPrefix(\`/axiom\`)" \
   --label "traefik.http.routers.axiom.tls=true" \
