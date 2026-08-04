@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="./banner.png" alt="EVIDIQ Axiom" width="100%" />
+</p>
+
+<p align="center">
   <h1 align="center">EVIDIQ Axiom</h1>
 </p>
 
@@ -30,10 +34,11 @@
 
 The agent economy now has payment rails and a marketplace, so agents can hire and pay each
 other. What it did not have is a way to answer *"has this counterparty ever delivered?"* from
-evidence rather than from self-report. Axiom holds a first-party record of interactions that
-actually happened between agents, each backed by a verifiable proof, signed, anchored to 0G,
-and scored by a published function an outsider can recompute. The marketplace's own numbers
-belong to Compass; Axiom reads the subject's own wallet and the record of attestations.
+evidence rather than from self-report. Axiom is that missing institution: it does not
+originate the transactions, it **keeps the record of them and prices the risk of the next
+one** — first-party records of interactions that actually happened between agents, each
+backed by a verifiable proof, signed, anchored to 0G, and scored by a published function an
+outsider can recompute.
 
 1. **Wallet-side underwriting** — total value, token quality (honeypot/high-tax), approval
    exposure, activity recency and trading PnL, read from the subject's own address via
@@ -47,14 +52,16 @@ belong to Compass; Axiom reads the subject's own wallet and the record of attest
    the free five cover capabilities, the wallet profile, attestation verification, the score
    and cost estimation.
 
-> **Launch status: Phase 1 — live, gate bypassed, not yet registered.** Deployed at
-> `https://mcp.evidiq.dev/axiom/mcp` (port 3022) with the x402 gate bypassed so every tool
-> can be exercised before payment goes live. **Phase 2 (gate on) is in progress; the OKX.AI
-> agent registration, the A2A subscription entry and the real settled payment are the
-> operator's — the table cells below stay blank until observed.**
+> **Launch status: live, gate on, registered, listing under review.** Deployed at
+> `https://mcp.evidiq.dev/axiom/mcp` (port 3022) with the x402 gate enforced. Registered on
+> OKX.AI as Agent **#10514**; listing `Under review`. **No real settlement has happened yet —
+> the settlement cells below stay blank until a paid call settles.**
 >
-> **No attestations are seeded.** `insufficient evidence` is the expected answer at launch:
-> the on-chain families carry every score until real interactions accrue.
+> **Fixture gate:** the four Sybil rules from the plan (§4) were built as hard-failing tests
+> before any tool existed — self-attestation rejected against the signature, one attestation
+> per proof, unproven submissions stored `unverified`, and a standing floor so a new address
+> vouching for a new address is worth approximately nothing. This is a reputation service:
+> the gate exists so a false pass cannot become permanent.
 
 ---
 
@@ -65,9 +72,8 @@ belong to Compass; Axiom reads the subject's own wallet and the record of attest
   enforced mechanically, not by good intentions.
 - **Proof verification with the economics inverted** — four rules tested as hard failures:
   self-attestation rejected (checked against the *signature*), one attestation per proof,
-  weight scaled by proven value × attester standing (a new address vouching for a new
-  address is worth approximately nothing), and unproven submissions stored `unverified`
-  with an honest receipt.
+  weight scaled by proven value × attester standing, and unproven submissions stored
+  `unverified` with an honest receipt.
 - **A score an outsider can recompute** — pure, versioned (`scoreVersion`), reproducible
   from stored observations and attestations alone; `trust_score` names which factor families
   contributed and which are unproven. No wall-clock drift, no hidden decay.
@@ -108,13 +114,15 @@ agent can pay, what it holds and how it behaves. Neither proxies the other.
 
 | Anchor tx | Storage root | Verified |
 |-----------|-------------|----------|
-| — | — | Planned for Phase 2 — cell stays blank until a real attestation anchors. |
+| [`0x18166ebf…cc5d4`](https://chainscan.0g.ai/tx/0x18166ebf85bc158918cd14d52a15bd040035b7aa117ff0bbb0532782d80cc5d4) | `0xffb367e4…891033a` | verified attestation (challenge-response), signer `0x8a3c…ee7D` |
+| [`0xcad6895d…9489cabf`](https://chainscan.0g.ai/tx/0xcad6895d525b9d96f65e8f42d5494035cd1e4ae2af9786f27c1e55da9489cabf) | `0x6f9f5c0a…f971781` | unverified submission receipt |
+| [`0x45d34674…a1fd99`](https://chainscan.0g.ai/tx/0x45d346749aa20c5aed73f7f1bce9842ec5cd91893f87bd9490ef1edf64a1fd99) | `0x8399869c…79d86e0a` | deduped replay receipt (S2) |
 
 ### x402 Payment Settlement (X Layer, chain 196)
 
 | Tool | Amount | Settlement tx | Result |
 |------|--------|---------------|--------|
-| — | — | — | Planned for Phase 2 (gate on) — cell stays blank until a real paid call settles. |
+| — | — | — | Planned — cell stays blank until a real paid call settles. |
 
 ---
 
@@ -122,14 +130,15 @@ agent can pay, what it holds and how it behaves. Neither proxies the other.
 
 | Property | Value |
 | :--- | :--- |
-| **Agent ID** | — (operator) |
-| **Agent Name** | — (operator) |
-| **Listing Status** | Not yet registered |
-| **Registration Tx** | — (operator) |
-| **OKX Agent URL** | — (operator) |
+| **Agent ID** | `#10514` |
+| **Agent Name** | `EVIDIQ Axiom` |
+| **Listing Status** | `Listing under review` |
+| **Registration Tx** | [`0x43bbcf39…1c65f7`](https://www.oklink.com/xlayer/tx/0x43bbcf392808cfc6e67ccc7754f2f3373e77da7568119f367ce859a9391c65f7) |
+| **OKX Agent URL** | https://www.okx.ai/agents/10514 |
 | **Agent Wallet** | — (operator) |
 | **Report Signer** | `0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D` (fleet signer, EIP-191) |
-| **Services Registered** | — (operator: 5 Paid $0.005–$0.03, 5 Free $0.00, 1 subscription) |
+| **Communication Addr** | — (operator) |
+| **Services Registered** | 11 — five paid per-call ($0.005–$0.03), five free, one A2A subscription (`reputation_watch`) |
 
 ---
 
@@ -144,7 +153,7 @@ agent can pay, what it holds and how it behaves. Neither proxies the other.
 | `verify_claim` | `0.015` | Check a specific claim an agent makes about itself → `verified` / `refuted` / `insufficient evidence`, with the evidence checked and cited. |
 | `credit_report` | `0.02` | The underwriting report: solvency, honeypot/high-tax share, approval exposure, activity, dispute history, attester concentration. |
 | `dispute_attestation` | `0.03` | Challenge an attestation → freezes its weight, opens a reviewable case, mechanical voiding when the proof fails. Non-refundable anti-spam fee. |
-| `reputation_watch` | subscription | Alerts on score movement and new red flags. A2A subscription, registered by the operator. |
+| `reputation_watch` | subscription | Alerts on score movement and new red flags. A2A subscription. |
 
 ### Free preflight and verification tools
 
@@ -215,12 +224,11 @@ flowchart TB
 Built before any tool. The four rules are tests, not preferences:
 
 ```
-S1  self-attestation rejected (attester == subject)             ✓
-S2  one attestation per proof — replay adds no weight            ✓
-S3  unproven submission stored unverified, never an error        ✓
-S4  new address vouching for new address ≈ zero weight           ✓
-    (standing floor 0.1 — the attestation is stored, it just
-     does not move the score, and the notes say so)
+S1  self-attestation rejected (attester == subject, checked vs the signature)  ✓
+S2  one attestation per proof — replay adds no weight                           ✓
+S3  unproven submission stored unverified, never an error                       ✓
+S4  new address vouching for new address ≈ zero weight
+    (standing floor 0.1 — stored, but does not move the score, and notes say so)✓
 ```
 
 ### Offline test suite
@@ -244,9 +252,8 @@ npm test (vitest)               → 28 passed / 28 (2 files), tsc clean
 ### Live test (Phase 1, bypass on)
 
 All 11 tools were exercised live against `https://mcp.evidiq.dev/axiom/mcp` with the
-bypass on (Phase 1), through direct MCP calls and through the OpenClaw agent
-(zerog/glm-5.2) on the VPS; raw run in `docs/live-test/axiom-livetest-out.log` and a
-recorded GIF in `docs/live-test/axiom-livetest.gif`.
+bypass on (Phase 1), through direct MCP calls and through the OpenClaw agent (glm-5.2)
+on the VPS; raw run in `docs/live-test/axiom-livetest-out.log`.
 
 ```
 Free Tools (HTTP 200)
@@ -270,22 +277,23 @@ Public route                     → /axiom/health 200 · /axiom/skill.md 200 ·
 ### Live test through the OpenClaw agent (glm-5.2 on the VPS)
 
 The Axiom skill was exercised end-to-end by the OpenClaw agent in one run against
-`https://mcp.evidiq.dev/axiom/mcp` — 11/11 → 200 ✓. Note on the host model: the
-configured default (`opencode/deepseek-v4-flash`) stalls with no tokens, so the
-default was switched to `zerog/glm-5.2` before the run — the same fix Helm recorded.
-Full run output in `docs/live-test/axiom-livetest-out.log`.
+`https://mcp.evidiq.dev/axiom/mcp` — 11/11 → 200 ✓. Full run output in
+`docs/live-test/axiom-livetest-out.log`, and the recorded run below.
+
+![EVIDIQ Axiom MCP — recorded OpenClaw run](./docs/live-test/axiom-livetest.gif)
 
 ![EVIDIQ Axiom MCP — live test report](./docs/live-test/report.png)
 
 ### Phase 2 — planned, cells stay blank until observed
 
 ```
-empty POST (with content-type)                     → (measure)
-POST without content-type                          → (measure)
-HEAD /mcp                                          → (measure)
-all 5 paid tools, bare {}                          → (measure)
-all 5 free tools, bare {}                          → (measure)
-onchainos payment quote --tool <name>              → (measure)
+empty POST (with content-type)                     → 402 ✓
+POST without content-type                          → 415 ✓
+HEAD /mcp                                          → 402 ✓ (71ms, no hang)
+all 5 paid tools, bare {}                          → 402 ✓
+all 5 free tools, bare {}                          → 200 ✓
+onchainos payment quote --tool <name>              → 0.005–0.03 USDT0, exact match ✓
+real settled payment                               → (operator)
 OKX.AI registration + A2A subscription             → (operator)
 ```
 
