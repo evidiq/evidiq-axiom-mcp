@@ -1,0 +1,24 @@
+[Unit]
+Description=EVIDIQ Axiom — deliver credit alerts to active A2A subscribers
+After=network-online.target
+Wants=network-online.target
+
+# Drives tools/axiom-alert-delivery.py, which is where the reasoning lives. Two host facts
+# this unit exists to encode:
+#
+#   XDG_RUNTIME_DIR is required because okx-a2a runs as a systemd USER service, and the CLI
+#   talks to that daemon. Without it the send silently has no daemon to reach.
+#
+#   The script is idempotent and rate-limits heartbeats per subscriber, so the timer may fire
+#   often without spamming anyone. A real alert goes out on the first pass after the watched
+#   state moves; a heartbeat goes out at most every six hours.
+
+[Service]
+Type=oneshot
+Environment=XDG_RUNTIME_DIR=/run/user/0
+Environment=AXIOM_AGENT_ID=10514
+Environment=AXIOM_ENDPOINT=https://mcp.evidiq.dev/axiom/mcp
+ExecStart=/usr/bin/python3 /root/axiom-alert-delivery.py
+User=root
+StandardOutput=journal
+StandardError=journal

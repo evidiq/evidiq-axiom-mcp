@@ -1,0 +1,16 @@
+[Unit]
+Description=EVIDIQ Axiom — run the credit-alert delivery pass every 30 minutes
+
+# Thirty minutes is the polling cadence, not the message cadence. The script decides what to
+# send: an alert the moment the watched address changes, and otherwise a heartbeat at most
+# once every six hours. Putting the rate limit in the script rather than the timer means a
+# real change is never delayed by up to six hours just to keep the heartbeat quiet.
+
+[Timer]
+OnBootSec=4min
+OnUnitActiveSec=30min
+AccuracySec=30s
+Unit=evidiq-axiom-delivery.service
+
+[Install]
+WantedBy=timers.target
