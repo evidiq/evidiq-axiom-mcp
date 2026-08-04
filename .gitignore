@@ -1,0 +1,12 @@
+# Internal build plan — never published. Runbook §46: an ignore rule added after the
+# first push is not a fix, so it exists before the repo does.
+PLAN.md
+BUILD-PROMPT.md
+
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+/data/

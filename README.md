@@ -1,0 +1,298 @@
+<p align="center">
+  <h1 align="center">EVIDIQ Axiom</h1>
+</p>
+
+<p align="center"><strong>The credit bureau for AI agents</strong></p>
+
+<p align="center">
+  Reputation and verification, backed by proofs of interaction — signed EIP-191,
+  anchored to 0G, scored by a published function an outsider can recompute.
+  Service #21 of the EVIDIQ fleet.
+</p>
+
+<p align="center">
+  <a href="https://evidiq.dev">evidiq.dev</a> &middot;
+  <a href="https://mcp.evidiq.dev/axiom/skill.md">Agent Skill</a> &middot;
+  <a href="https://github.com/evidiq/evidiq-axiom-mcp">Axiom MCP</a>
+</p>
+
+<p align="center">
+  <a href="https://mcp.evidiq.dev/axiom/mcp"><img src="https://img.shields.io/badge/MCP%20Server-Active-3CCF4E?style=flat-square" alt="MCP Server active" /></a>
+  <a href="https://www.oklink.com/xlayer"><img src="https://img.shields.io/badge/X%20Layer-USDT0-3CCF4E?style=flat-square" alt="X Layer USDT0" /></a>
+  <a href="https://mcp.evidiq.dev/axiom/x402"><img src="https://img.shields.io/badge/x402-0.005%E2%80%930.03%20USDT0-2563EB?style=flat-square" alt="x402: 0.005 to 0.03 USDT0" /></a>
+  <a href="https://web3.okx.com/onchainos/dev-docs/payments/service-seller-sdk"><img src="https://img.shields.io/badge/Payments-Official%20OKX%20SDK-121212?style=flat-square&logo=okx&logoColor=white" alt="Official OKX Payment SDK" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-3DA639?style=flat-square" alt="License: MIT" /></a>
+</p>
+
+---
+
+**Compass reads the storefront. Axiom reads the balance sheet.**
+
+The agent economy now has payment rails and a marketplace, so agents can hire and pay each
+other. What it did not have is a way to answer *"has this counterparty ever delivered?"* from
+evidence rather than from self-report. Axiom holds a first-party record of interactions that
+actually happened between agents, each backed by a verifiable proof, signed, anchored to 0G,
+and scored by a published function an outsider can recompute. The marketplace's own numbers
+belong to Compass; Axiom reads the subject's own wallet and the record of attestations.
+
+1. **Wallet-side underwriting** — total value, token quality (honeypot/high-tax), approval
+   exposure, activity recency and trading PnL, read from the subject's own address via
+   Onchain OS. No cold start: `trust_score` answers on day one for any agent with a wallet.
+2. **Proof-backed attestations** — an attestation counts only with a verified proof of
+   interaction. Self-attestation is rejected against the signature; one attestation per
+   proof; weight scales with proven value and the attester's standing; unproven submissions
+   are stored `unverified` and honestly reported.
+3. **MCP server** — 11 tools (5 free, 5 paid per-call, 1 subscription): `attest_interaction`,
+   `recommend_agent`, `verify_claim`, `credit_report`, `dispute_attestation` for money;
+   the free five cover capabilities, the wallet profile, attestation verification, the score
+   and cost estimation.
+
+> **Launch status: Phase 1 — live, gate bypassed, not yet registered.** Deployed at
+> `https://mcp.evidiq.dev/axiom/mcp` (port 3022) with the x402 gate bypassed so every tool
+> can be exercised before payment goes live. **Phase 2 (gate on) is in progress; the OKX.AI
+> agent registration, the A2A subscription entry and the real settled payment are the
+> operator's — the table cells below stay blank until observed.**
+>
+> **No attestations are seeded.** `insufficient evidence` is the expected answer at launch:
+> the on-chain families carry every score until real interactions accrue.
+
+---
+
+## What it does
+
+- **Wallet profile** — the subject's on-chain footprint: total value, token count, activity
+  recency, attestation count. No marketplace fields, ever — the boundary with Compass is
+  enforced mechanically, not by good intentions.
+- **Proof verification with the economics inverted** — four rules tested as hard failures:
+  self-attestation rejected (checked against the *signature*), one attestation per proof,
+  weight scaled by proven value × attester standing (a new address vouching for a new
+  address is worth approximately nothing), and unproven submissions stored `unverified`
+  with an honest receipt.
+- **A score an outsider can recompute** — pure, versioned (`scoreVersion`), reproducible
+  from stored observations and attestations alone; `trust_score` names which factor families
+  contributed and which are unproven. No wall-clock drift, no hidden decay.
+- **Attestations chained and anchored** — every receipt is a JCS digest over a closed field
+  set, EIP-191 signed, 0G-anchored; records carry a sequence number and predecessor hash, so
+  a removed record is a visible gap. 0G being down degrades the proof, never the service.
+- **Disputes that actually drain** — a dispute immediately freezes the challenged weight; a
+  proof that fails re-verification voids the attestation automatically; the fee is a
+  non-refundable anti-spam fee, stated in the tool description.
+- **`verify_claim` with a bound model** — the model (when configured) may read evidence and
+  draft a verdict; it never mutates a score, signs or anchors. Every verdict cites what was
+  checked; `insufficient evidence` is a first-class answer.
+- **Free tools degrade, never reject** — past the soft rate threshold free answers keep the
+  same shape with reduced detail plus a `rateNote`, still `200`, still valid.
+
+---
+
+## Route to Axiom when
+
+Use Axiom **when a counterparty's reputation is the question**: before taking a stranger's
+task (`trust_score` free first, then `credit_report`), when you need a counterparty who can
+pay and deliver (`recommend_agent`), when an agent claims something about itself
+(`verify_claim`), when a record looks wrong (`verify_attestation` free, then
+`dispute_attestation`), or when you want to watch a counterparty over time
+(`reputation_watch` subscription).
+
+A natural chain: `axiom_capabilities` → `trust_score` → `wallet_profile` →
+`credit_report` → `recommend_agent` → `attest_interaction` → `verify_attestation`.
+
+Boundary: Compass answers what the platform says an agent sells; Axiom answers whether the
+agent can pay, what it holds and how it behaves. Neither proxies the other.
+
+---
+
+## Proven on-chain
+
+### 0G Storage Anchoring (0G mainnet, chain 16661)
+
+| Anchor tx | Storage root | Verified |
+|-----------|-------------|----------|
+| — | — | Planned for Phase 2 — cell stays blank until a real attestation anchors. |
+
+### x402 Payment Settlement (X Layer, chain 196)
+
+| Tool | Amount | Settlement tx | Result |
+|------|--------|---------------|--------|
+| — | — | — | Planned for Phase 2 (gate on) — cell stays blank until a real paid call settles. |
+
+---
+
+## OKX.AI Marketplace Registration
+
+| Property | Value |
+| :--- | :--- |
+| **Agent ID** | — (operator) |
+| **Agent Name** | — (operator) |
+| **Listing Status** | Not yet registered |
+| **Registration Tx** | — (operator) |
+| **OKX Agent URL** | — (operator) |
+| **Agent Wallet** | — (operator) |
+| **Report Signer** | `0x8a3c7524Aaed081825aC88eC7f4cCECFc583ee7D` (fleet signer, EIP-191) |
+| **Services Registered** | — (operator: 5 Paid $0.005–$0.03, 5 Free $0.00, 1 subscription) |
+
+---
+
+## Eleven MCP tools
+
+### Paid tools
+
+| Tool | USDT0 | Purpose |
+|------|-------|---------|
+| `attest_interaction` | `0.005` | Record an outcome with its proof → verified or `unverified`, receipt anchored. The core write — cheapest paid call on purpose, because at launch the scarce input is the supply of attestations. |
+| `recommend_agent` | `0.01` | A task description → up to three candidates by attested standing, each with its reason and evidence count. |
+| `verify_claim` | `0.015` | Check a specific claim an agent makes about itself → `verified` / `refuted` / `insufficient evidence`, with the evidence checked and cited. |
+| `credit_report` | `0.02` | The underwriting report: solvency, honeypot/high-tax share, approval exposure, activity, dispute history, attester concentration. |
+| `dispute_attestation` | `0.03` | Challenge an attestation → freezes its weight, opens a reviewable case, mechanical voiding when the proof fails. Non-refundable anti-spam fee. |
+| `reputation_watch` | subscription | Alerts on score movement and new red flags. A2A subscription, registered by the operator. |
+
+### Free preflight and verification tools
+
+| Tool | Purpose |
+|------|---------|
+| `axiom_capabilities` | Tool list, exact price table, scoring-function version, anchoring model, boundary with Compass. |
+| `wallet_profile` | The subject's on-chain footprint: total value, token count, activity recency, attestation count. |
+| `verify_attestation` | Recompute a receipt's digest, check the EIP-191 signature, confirm the 0G anchor, walk the chain for gaps. Free forever. |
+| `trust_score` | 0–100 with the factors that produced it and the `scoreVersion`. Free forever. |
+| `estimate_cost` | Exact atomic and human price of any paid tool, from the same table the gate charges from. |
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TB
+    agent["<b>AI agent / caller</b><br/>MCP client"]
+    request{"Tool call<br/>free or paid?"}
+    agent -->|POST /axiom/mcp| request
+
+    free["Free preflight & verification<br/>capabilities · wallet_profile<br/>verify_attestation · trust_score<br/>estimate_cost"]
+    gate["x402 v2 gate<br/>EIP-3009 exact · pay per call<br/>402 unpaid · settles on X Layer"]
+    xlayer[("X Layer<br/>USD₮0 · eip155:196")]
+    request -->|free helper| free
+    request -->|paid call| gate
+    gate -. verify and settle .-> xlayer
+
+    subgraph axiom["EVIDIQ Axiom trust boundary"]
+        direction TB
+        onchain["1. Wallet reads<br/>Onchain OS: portfolio · security<br/>tracker · market — read-only"]
+        proof["2. Proof verification<br/>a2a job · x402 tx · challenge<br/>4 Sybil rules as hard failures"]
+        score["3. Pure scoring fn (versioned)<br/>6 factor families<br/>reproducible, no hidden decay"]
+        chain["4. Receipt chain<br/>seq + predecessor hash + JCS<br/>EIP-191 signed"]
+        anchor["5. 0G anchor (best-effort)<br/>degraded proof, never service"]
+        onchain --> score
+        proof --> chain
+        chain --> anchor
+        score --> chain
+    end
+
+    og[("0G Storage<br/>Merkle root · upload tx<br/>chain 16661")]
+    free --> onchain
+    free --> chain
+    gate --> proof
+    anchor -. root + tx .-> og
+    og -. root + tx .-> response
+
+    response["<b>MCP response</b><br/>score + factors + scoreVersion<br/>receipt + signature + anchor<br/>citations + verdict · credit picture"]
+
+    classDef client fill:#312e81,stroke:#a78bfa,color:#ffffff,stroke-width:2px;
+    classDef payment fill:#052e16,stroke:#4ade80,color:#ffffff,stroke-width:2px;
+    classDef core fill:#0f172a,stroke:#38bdf8,color:#ffffff,stroke-width:2px;
+    classDef output fill:#4c1d95,stroke:#c4b5fd,color:#ffffff,stroke-width:2px;
+    class agent,request client;
+    class free,gate,xlayer,og payment;
+    class onchain,proof,score,chain,anchor core;
+    class response output;
+    style axiom fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:2px;
+```
+
+---
+
+## Verification Log
+
+### Fixture gate — §4 Sybil rules as hard failures
+
+Built before any tool. The four rules are tests, not preferences:
+
+```
+S1  self-attestation rejected (attester == subject)             ✓
+S2  one attestation per proof — replay adds no weight            ✓
+S3  unproven submission stored unverified, never an error        ✓
+S4  new address vouching for new address ≈ zero weight           ✓
+    (standing floor 0.1 — the attestation is stored, it just
+     does not move the score, and the notes say so)
+```
+
+### Offline test suite
+
+```
+npm test (vitest)               → 28 passed / 28 (2 files), tsc clean
+  test/sybil.test.ts  (10)  → the §4 hard failures + weight scaling + score
+                              determinism (same inputs, same score; no wall-
+                              clock drift; honeypots count double)
+  test/server.test.ts  (18)  → all 11 tools through the gate (bypass), free
+                              bare {} → 200, attest round-trips with the
+                              signature-derived attester, S1/S2/S3 live,
+                              verify_attestation detects a REMOVED record
+                              (sequence gap), dispute freezes weight, the
+                              Compass-boundary grep test (no soldCount /
+                              feedbackRate / securityRate / rating anywhere
+                              in any response surface), rate-limit degrade
+                              (200 + rateNote past the soft threshold)
+```
+
+### Live test (Phase 1, bypass on)
+
+To be appended after the live probe and the OpenClaw run — nothing here is claimed that has
+not been observed.
+
+### Phase 2 — planned, cells stay blank until observed
+
+```
+empty POST (with content-type)                     → (measure)
+POST without content-type                          → (measure)
+HEAD /mcp                                          → (measure)
+all 5 paid tools, bare {}                          → (measure)
+all 5 free tools, bare {}                          → (measure)
+onchainos payment quote --tool <name>              → (measure)
+OKX.AI registration + A2A subscription             → (operator)
+```
+
+---
+
+## Use it from any agent
+
+```bash
+# Read the public Skill document
+curl -s https://mcp.evidiq.dev/axiom/skill.md
+
+# Inspect current x402 pricing discovery
+curl -s https://mcp.evidiq.dev/axiom/x402
+
+# Score a counterparty — free forever
+curl -s -X POST https://mcp.evidiq.dev/axiom/mcp -H "content-type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"trust_score","arguments":{"address":"0x2a8efe3093278bb4bd3b2d9c7b5ba992ca4fc9b0"}}}'
+
+# Connect remote MCP server (OpenClaw)
+openclaw mcp add evidiq-axiom --transport streamable-http --url https://mcp.evidiq.dev/axiom/mcp
+
+# Connect remote MCP server (Claude Code)
+claude mcp add --transport http evidiq-axiom https://mcp.evidiq.dev/axiom/mcp
+```
+
+---
+
+## Self-host
+
+```bash
+docker build -t evidiq-axiom:latest .
+docker run -d --env-file .env -p 3022:3022 evidiq-axiom:latest
+# Endpoint: http://localhost:3022/mcp
+# Ledger: AXIOM_DB_PATH (mounted volume) — receipts, observations, disputes.
+```
+
+---
+
+## License
+
+EVIDIQ owns and licenses its original Axiom code under MIT. Third-party dependencies maintain their own open-source licenses in `THIRD_PARTY_NOTICES.md`.
